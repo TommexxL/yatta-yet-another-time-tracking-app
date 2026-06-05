@@ -13,7 +13,17 @@ return new class extends Migration
     {
         Schema::create('time_entries', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->date('date');
+            $table->time('clock_in')->nullable();
+            $table->time('clock_out')->nullable();
+            $table->string('status')->default('open');
+            $table->text('notes')->nullable();
             $table->timestamps();
+
+            $table->index(['company_id', 'date']);
+            $table->index(['user_id', 'date']);
         });
     }
 

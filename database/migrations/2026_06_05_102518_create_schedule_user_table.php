@@ -11,16 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('schedule_days', function (Blueprint $table) {
+        Schema::create('schedule_user', function (Blueprint $table) {
             $table->id();
             $table->foreignId('schedule_id')->constrained()->cascadeOnDelete();
-            $table->unsignedTinyInteger('weekday');
-            $table->time('start_time');
-            $table->time('end_time');
-            $table->unsignedSmallInteger('break_minutes')->default(0);
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->date('starts_at')->nullable();
+            $table->date('ends_at')->nullable();
             $table->timestamps();
 
-            $table->unique(['schedule_id', 'weekday']);
+            $table->unique(['schedule_id', 'user_id', 'starts_at']);
+            $table->index(['user_id', 'starts_at', 'ends_at']);
         });
     }
 
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('schedule_days');
+        Schema::dropIfExists('schedule_user');
     }
 };

@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('schedules', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
+            $table->string('name');
+            $table->decimal('weekly_hours', 5, 2);
+            $table->boolean('active')->default(true);
             $table->timestamps();
         });
     }

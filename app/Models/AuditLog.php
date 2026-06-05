@@ -26,4 +26,16 @@ class AuditLog extends Model
     {
         return $this->morphTo();
     }
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'metadata' => 'array',
+        ];
+    }
 }

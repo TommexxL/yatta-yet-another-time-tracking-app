@@ -3,6 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\AuditLog;
+use App\Models\Company;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,7 +20,22 @@ class AuditLogFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'company_id' => Company::factory(),
+            'user_id' => User::factory(),
+            'action' => fake()->randomElement([
+                'user.created',
+                'time_entry.created',
+                'leave_request.updated',
+                'sick_leave.closed',
+                'schedule.updated',
+            ]),
+            'description' => fake()->sentence(),
+            'auditable_type' => null,
+            'auditable_id' => null,
+            'metadata' => [
+                'ip' => fake()->ipv4(),
+                'user_agent' => fake()->userAgent(),
+            ],
         ];
     }
 }

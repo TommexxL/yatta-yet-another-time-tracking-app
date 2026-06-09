@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\LeaveRequests\Schemas;
 
+use App\Enums\LeaveRequestStatus;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
@@ -31,9 +32,9 @@ class LeaveRequestForm
                     ->numeric(),
                 Textarea::make('reason')
                     ->columnSpanFull(),
-                TextInput::make('status')
+                Select::make('status')
                     ->required()
-                    ->default('pending'),
+                    ->options(LeaveRequestStatus::class),
                 TextInput::make('approved_by')
                     ->numeric(),
                 DateTimePicker::make('approved_at'),

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SickLeaves\Schemas;
 
+use App\Enums\SickLeaveStatus;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -26,9 +27,9 @@ class SickLeaveForm
                 DatePicker::make('end_date'),
                 Textarea::make('notes')
                     ->columnSpanFull(),
-                TextInput::make('status')
+                Select::make('status')
                     ->required()
-                    ->default('reported'),
+                    ->options(SickLeaveStatus::class),
             ]);
     }
 }

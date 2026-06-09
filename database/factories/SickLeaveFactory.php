@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\SickLeaveStatus;
 use App\Models\Company;
 use App\Models\SickLeave;
 use App\Models\User;
@@ -31,7 +32,7 @@ class SickLeaveFactory extends Factory
                 ? fake()->dateTimeBetween($startDate, $startDate->format('Y-m-d').' +7 days')->format('Y-m-d')
                 : null,
             'notes' => fake()->optional(0.7)->sentence(),
-            'status' => $isClosed ? 'closed' : 'reported',
+            'status' => $isClosed ? SickLeaveStatus::Approved : SickLeaveStatus::Reported,
         ];
     }
 }

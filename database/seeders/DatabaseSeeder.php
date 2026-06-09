@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\LeaveRequestStatus;
 use App\Models\AuditLog;
 use App\Models\Company;
 use App\Models\LeaveRequest;
@@ -138,7 +139,11 @@ class DatabaseSeeder extends Seeder
         $approver = $managers->first();
 
         $employees->take(8)->each(function (User $employee, int $index) use ($approver, $company): void {
-            $status = ['pending', 'approved', 'rejected'][$index % 3];
+            $status = [
+                LeaveRequestStatus::Pending,
+                LeaveRequestStatus::Approved,
+                LeaveRequestStatus::Denied,
+            ][$index % 3];
 
             LeaveRequest::factory()->create([
                 'company_id' => $company->id,

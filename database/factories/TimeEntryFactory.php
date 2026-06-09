@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\TimeEntryStatus;
 use App\Models\Company;
 use App\Models\TimeEntry;
 use App\Models\User;
@@ -28,7 +29,7 @@ class TimeEntryFactory extends Factory
             'date' => fake()->dateTimeBetween('-60 days', 'today')->format('Y-m-d'),
             'clock_in' => $clockIn,
             'clock_out' => $clockOut,
-            'status' => fake()->randomElement(['open', 'submitted', 'approved', 'corrected']),
+            'status' => fake()->randomElement(TimeEntryStatus::cases()),
             'notes' => fake()->optional(0.2)->sentence(),
         ];
     }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TimeEntries\Schemas;
 
+use App\Enums\TimeEntryStatus;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -25,9 +26,9 @@ class TimeEntryForm
                     ->required(),
                 TimePicker::make('clock_in'),
                 TimePicker::make('clock_out'),
-                TextInput::make('status')
+                Select::make('status')
                     ->required()
-                    ->default('open'),
+                    ->options(TimeEntryStatus::class),
                 Textarea::make('notes')
                     ->columnSpanFull(),
             ]);

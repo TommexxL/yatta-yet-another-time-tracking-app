@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\LeaveRequestStatus;
 use App\Models\Company;
 use App\Models\LeaveRequest;
 use App\Models\User;

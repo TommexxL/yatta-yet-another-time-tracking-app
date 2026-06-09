@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\LeaveRequestStatus;
 use App\Models\AuditLog;
 use App\Models\Company;
 use App\Models\LeaveRequest;

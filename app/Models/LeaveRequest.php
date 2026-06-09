@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\LeaveRequestStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -52,6 +53,7 @@ class LeaveRequest extends Model
             'end_date' => 'date',
             'days' => 'decimal:2',
             'approved_at' => 'datetime',
+            'status' => LeaveRequestStatus::class,
         ];
     }
 }

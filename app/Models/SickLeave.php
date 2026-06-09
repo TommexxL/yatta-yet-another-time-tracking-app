@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\SickLeaveStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -42,6 +43,7 @@ class SickLeave extends Model
             'start_date' => 'date',
             'expected_return_date' => 'date',
             'end_date' => 'date',
+            'status' => SickLeaveStatus::class,
         ];
     }
 }

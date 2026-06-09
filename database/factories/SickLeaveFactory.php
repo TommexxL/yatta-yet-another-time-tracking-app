@@ -31,7 +31,7 @@ class SickLeaveFactory extends Factory
                 ? fake()->dateTimeBetween($startDate, $startDate->format('Y-m-d').' +7 days')->format('Y-m-d')
                 : null,
             'notes' => fake()->optional(0.7)->sentence(),
-            'status' => $isClosed ? 'closed' : 'reported',
+            'status' => $isClosed ? SickLeaveStatus::approved : LeaveRequestStatus::reported,
         ];
     }
 }

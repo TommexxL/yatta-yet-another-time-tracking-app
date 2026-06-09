@@ -31,7 +31,7 @@ class LeaveRequestFactory extends Factory
             'end_date' => $endDate->format('Y-m-d'),
             'days' => $days,
             'reason' => fake()->optional(0.8)->sentence(),
-            'status' => fake()->randomElement(['pending', 'approved', 'rejected']),
+            'status' => fake()->randomElement(LeaveRequestStatus::cases()),
             'approved_by' => null,
             'approved_at' => null,
             'rejection_reason' => null,

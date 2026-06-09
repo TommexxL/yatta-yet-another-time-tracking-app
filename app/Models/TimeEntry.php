@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TimeEntryStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -39,7 +40,8 @@ class TimeEntry extends Model
     protected function casts(): array
     {
         return [
-            'date' => 'date',
+            'date' => 'date',            
+            'status' => TimeEntryStatus::class,
         ];
     }
 }

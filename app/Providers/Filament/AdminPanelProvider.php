@@ -28,6 +28,12 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->profile()
+            ->multiFactorAuthentication([
+                AppAuthentication::make()
+                    ->recoverable()
+                    ->brandName('YATTA'),
+            ], isRequired: true)
             ->colors([
                 'primary' => Color::Amber,
             ])

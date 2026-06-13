@@ -43,7 +43,22 @@ class FortifyLoginTest extends TestCase
             'password' => 'password',
         ]);
 
-        $response->assertRedirect('/');
+        $response->assertRedirect('/profile');
         $this->assertAuthenticatedAs($manager);
+    }
+
+    public function test_profile_page_requires_authentication(): void
+    {
+        $this->get('/profile')->assertRedirect('/login');
+    }
+
+    public function test_authenticated_user_can_view_profile_page(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get('/profile')
+            ->assertOk()
+            ->assertSee($user->email);
     }
 }

@@ -8,6 +8,8 @@ use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthentication;
 use Filament\Auth\MultiFactor\App\Concerns\InteractsWithAppAuthenticationRecovery;
 use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthentication;
 use Filament\Auth\MultiFactor\App\Contracts\HasAppAuthenticationRecovery;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -38,7 +40,7 @@ use Spatie\Permission\Traits\HasRoles;
     'app_authentication_secret',
     'app_authentication_recovery_codes',
     ])]
-class User extends Authenticatable implements HasAppAuthentication, HasAppAuthenticationRecovery
+class User extends Authenticatable implements FilamentUser, HasAppAuthentication, HasAppAuthenticationRecovery
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory;
@@ -83,6 +85,12 @@ class User extends Authenticatable implements HasAppAuthentication, HasAppAuthen
     public function auditLogs(): HasMany
     {
         return $this->hasMany(AuditLog::class);
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->active
+        && $this->hasRole('admin');
     }
 
     /**

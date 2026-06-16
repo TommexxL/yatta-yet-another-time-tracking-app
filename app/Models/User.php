@@ -107,4 +107,22 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             'two_factor_confirmed_at' => 'datetime',
         ];
     }
+
+    public function isClockedIn(): bool
+    {
+        return TimeEntry::query()
+            ->where('user_id', $this->id)
+            ->whereDate('date', today())
+            ->whereNull('clock_out')
+            ->exists();
+    }
+
+    public function activeTimeEntry(): ?TimeEntry
+    {
+        return TimeEntry::query()
+            ->where('user_id', $this->id)
+            ->whereDate('date', today())
+            ->whereNull('clock_out')
+            ->first();
+    }
 }

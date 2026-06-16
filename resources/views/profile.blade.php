@@ -184,7 +184,7 @@
                             <div>
                                 <p>
                                 Clocked in at:
-                                {{ $user->activeTimeEntry()?->clock_in }}
+                                {{ \Carbon\Carbon::parse($user->activeTimeEntry()?->clock_in)->format('H:i') }}
                                 </p>
                             </div>
                             <form method="POST" action="{{ route('clock-out') }}">

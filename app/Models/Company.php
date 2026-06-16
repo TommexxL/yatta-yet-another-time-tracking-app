@@ -35,6 +35,11 @@ class Company extends Model
         return $this->hasMany(TimeEntry::class);
     }
 
+    public function timeEntryCorrections(): HasMany
+    {
+        return $this->hasMany(TimeEntryCorrection::class);
+    }
+
     public function leaveRequests(): HasMany
     {
         return $this->hasMany(LeaveRequest::class);

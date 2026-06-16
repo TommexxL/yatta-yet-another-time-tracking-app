@@ -2,25 +2,30 @@
 
 namespace App\Models;
 
-use App\Enums\TimeEntryStatus;
+use App\Enums\TimeEntryCorrectionStatus;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'company_id',
     'user_id',
+    'time_entry_id',
     'date',
-    'clock_in',
-    'clock_out',
+    'current_clock_in',
+    'current_clock_out',
+    'requested_clock_in',
+    'requested_clock_out',
+    'reason',
     'status',
-    'notes',
+    'reviewed_by',
+    'reviewed_at',
+    'manager_notes',
 ])]
-class TimeEntry extends Model
+class TimeEntryCorrection extends Model
 {
-    /** @use HasFactory<\Database\Factories\TimeEntryFactory> */
+    /** @use HasFactory<\Database\Factories\TimeEntryCorrectionFactory> */
     use HasFactory;
 
     public function company(): BelongsTo
@@ -33,9 +38,14 @@ class TimeEntry extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function corrections(): HasMany
+    public function timeEntry(): BelongsTo
     {
-        return $this->hasMany(TimeEntryCorrection::class);
+        return $this->belongsTo(TimeEntry::class);
+    }
+
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 
     /**
@@ -46,8 +56,9 @@ class TimeEntry extends Model
     protected function casts(): array
     {
         return [
-            'date' => 'date',            
-            'status' => TimeEntryStatus::class,
+            'date' => 'date',
+            'reviewed_at' => 'datetime',
+            'status' => TimeEntryCorrectionStatus::class,
         ];
     }
 }

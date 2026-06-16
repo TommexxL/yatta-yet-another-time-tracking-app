@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\TimeEntryController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -11,3 +12,12 @@ Route::get('/profile', function () {
         'user' => auth()->user()->loadMissing('company'),
     ]);
 })->middleware('auth')->name('profile');
+
+
+Route::middleware('auth')->group(function () {
+    Route::post('/clock-in', [TimeEntryController::class, 'clockIn'])
+        ->name('clock-in');
+
+    Route::post('/clock-out', [TimeEntryController::class, 'clockOut'])
+        ->name('clock-out');
+});

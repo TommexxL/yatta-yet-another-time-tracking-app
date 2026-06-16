@@ -10,6 +10,7 @@ Route::get('/', function () {
 Route::get('/profile', function () {
     return view('profile', [
         'user' => auth()->user()->loadMissing('company'),
+        'isClockedIn' => auth()->user()->isClockedIn(),
     ]);
 })->middleware('auth')->name('profile');
 

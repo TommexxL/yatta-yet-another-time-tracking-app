@@ -167,24 +167,33 @@
                     <h1>{{ $user->name }}</h1>
                     <p class="lead">You are signed in through the regular Fortify authentication flow.</p>
                 </div>
-                
+
                 <div class="card-header">
                     <h2>Time Tracking</h2>
 
                     <div style="display:flex; gap:1rem; margin-top:1rem;">
-                        <form method="POST" action="{{ route('clock-in') }}">
-                            @csrf
-                            <button class="button" type="submit">
-                                Clock In
-                            </button>
-                        </form>
-
-                        <form method="POST" action="{{ route('clock-out') }}">
-                            @csrf
-                            <button class="button" type="submit">
-                                Clock Out
-                            </button>
-                        </form>
+                        @if(! $user->isClockedIn())
+                            
+                            <form method="POST" action="{{ route('clock-in') }}">
+                                @csrf                                
+                                <button class="button" type="submit">
+                                    Clock In
+                                </button>                                
+                            </form>
+                        @else
+                            <div>
+                                <p>
+                                Clocked in at:
+                                {{ $user->activeTimeEntry()?->clock_in }}
+                                </p>
+                            </div>
+                            <form method="POST" action="{{ route('clock-out') }}">
+                                @csrf
+                                <button class="button" type="submit">
+                                    Clock Out
+                                </button>
+                            </form>
+                        @endif
                     </div>
                 </div>
 

@@ -174,6 +174,10 @@
                     <div style="display:flex; gap:1rem; margin-top:1rem;">
                         <a class="button" href="{{ route('schedule') }}">View Schedule</a>
 
+                        @if($user->hasRole('manager'))
+                            <a class="button" href="{{ route('manage.overview') }}">Manage</a>
+                        @endif
+
                         @if(! $user->isClockedIn())
                             
                             <form method="POST" action="{{ route('clock-in') }}">

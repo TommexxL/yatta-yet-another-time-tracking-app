@@ -67,6 +67,11 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
         return $this->hasMany(TimeEntry::class);
     }
 
+    public function timeEntryCorrections(): HasMany
+    {
+        return $this->hasMany(TimeEntryCorrection::class);
+    }
+
     public function leaveRequests(): HasMany
     {
         return $this->hasMany(LeaveRequest::class);
@@ -123,6 +128,33 @@ class User extends Authenticatable implements FilamentUser, HasAppAuthentication
             ->where('user_id', $this->id)
             ->whereDate('date', today())
             ->whereNull('clock_out')
+            ->first();
+    }
+
+    public function activeSchedule(): ?Schedule
+    {
+        return $this->schedules()
+            ->where(function ($query) {
+                $query->whereNull('schedule_user.starts_at')
+                    ->orWhere('schedule_user.starts_at', '<=', today());
+            })
+            ->where(function ($query) {
+                $query->whereNull('schedule_user.ends_at')
+                    ->orWhere('schedule_user.ends_at', '>=', today());
+            })
+            ->first();
+    }
+
+    public function todaysScheduleDay(): ?ScheduleDay
+    {
+        $schedule = $this->activeSchedule();
+
+        if (! $schedule) {
+            return null;
+        }
+
+        return $schedule->days()
+            ->where('weekday', now()->dayOfWeekIso)
             ->first();
     }
 }

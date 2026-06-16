@@ -167,6 +167,26 @@
                     <h1>{{ $user->name }}</h1>
                     <p class="lead">You are signed in through the regular Fortify authentication flow.</p>
                 </div>
+                
+                <div class="card-header">
+                    <h2>Time Tracking</h2>
+
+                    <div style="display:flex; gap:1rem; margin-top:1rem;">
+                        <form method="POST" action="{{ route('clock-in') }}">
+                            @csrf
+                            <button class="button" type="submit">
+                                Clock In
+                            </button>
+                        </form>
+
+                        <form method="POST" action="{{ route('clock-out') }}">
+                            @csrf
+                            <button class="button" type="submit">
+                                Clock Out
+                            </button>
+                        </form>
+                    </div>
+                </div>
 
                 <div class="grid">
                     <div class="item">

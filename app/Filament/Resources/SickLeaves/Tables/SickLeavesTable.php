@@ -32,6 +32,13 @@ class SickLeavesTable
                 TextColumn::make('status')
                     ->badge()
                     ->searchable(),
+                TextColumn::make('approver.name')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('approved_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

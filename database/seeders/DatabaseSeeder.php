@@ -96,13 +96,25 @@ class DatabaseSeeder extends Seeder
 
         $managers->each(fn (User $manager) => $manager->assignRole($managerRole));
 
+        $demoEmployee = User::factory()->create([
+            'company_id' => $company->id,
+            'name' => 'Ella Employee',
+            'first_name' => 'Ella',
+            'last_name' => 'Employee',
+            'email' => 'employee@yatta.test',
+            'employee_number' => 'EMP-0004',
+            'department' => 'Operations',
+            'active' => true,
+        ]);
+        $demoEmployee->assignRole($employeeRole);
+
         $employees = User::factory()
             ->count(12)
             ->create(['company_id' => $company->id]);
 
         $employees->each(fn (User $employee) => $employee->assignRole($employeeRole));
 
-        $users = collect([$admin])->merge($managers)->merge($employees);
+        $users = collect([$admin])->merge($managers)->push($demoEmployee)->merge($employees);
 
         $users->each(function (User $user) use ($schedule): void {
             $user->schedules()->attach($schedule->id, [
@@ -138,7 +150,7 @@ class DatabaseSeeder extends Seeder
 
         $approver = $managers->first();
 
-        $employees->take(8)->each(function (User $employee, int $index) use ($approver, $company): void {
+        collect([$demoEmployee])->merge($employees)->take(8)->each(function (User $employee, int $index) use ($approver, $company): void {
             $status = [
                 LeaveRequestStatus::Pending,
                 LeaveRequestStatus::Approved,
@@ -155,7 +167,7 @@ class DatabaseSeeder extends Seeder
             ]);
         });
 
-        $employees->slice(8, 3)->each(function (User $employee) use ($company): void {
+        $employees->slice(7, 3)->each(function (User $employee) use ($company): void {
             SickLeave::factory()->create([
                 'company_id' => $company->id,
                 'user_id' => $employee->id,

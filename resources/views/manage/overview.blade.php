@@ -292,6 +292,10 @@
                 gap: 1rem;
             }
 
+            .schedule-selector {
+                max-width: 24rem;
+            }
+
             .schedule-editor {
                 border: 1px solid var(--line);
                 border-radius: .6rem;
@@ -450,10 +454,29 @@
                         <div class="empty">No schedules have been created yet.</div>
                     @else
                         <div class="schedule-stack">
+                            <div class="field schedule-selector">
+                                <label class="label" for="schedule_editor_select">Edit existing schedule</label>
+                                <select id="schedule_editor_select" data-schedule-editor-select>
+                                    @foreach($managedSchedules as $managedSchedule)
+                                        <option value="schedule_editor_{{ $managedSchedule->id }}">
+                                            {{ $managedSchedule->name }}
+                                            @if(! $managedSchedule->active)
+                                                (inactive)
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
                             @foreach($managedSchedules as $managedSchedule)
                                 @php($scheduleDays = $managedSchedule->days->keyBy('weekday'))
 
-                                <article class="schedule-editor">
+                                <article
+                                    id="schedule_editor_{{ $managedSchedule->id }}"
+                                    class="schedule-editor"
+                                    data-schedule-editor
+                                    @if(! $loop->first) hidden @endif
+                                >
                                     <div class="schedule-editor-head">
                                         <div>
                                             <h3>{{ $managedSchedule->name }}</h3>
@@ -668,5 +691,16 @@
                 @endif
             </section>
         </main>
+
+        <script>
+            const scheduleEditorSelect = document.querySelector('[data-schedule-editor-select]');
+            const scheduleEditors = document.querySelectorAll('[data-schedule-editor]');
+
+            scheduleEditorSelect?.addEventListener('change', () => {
+                scheduleEditors.forEach((editor) => {
+                    editor.hidden = editor.id !== scheduleEditorSelect.value;
+                });
+            });
+        </script>
     </body>
 </html>

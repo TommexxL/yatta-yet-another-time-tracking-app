@@ -4,10 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Enums\TimeEntryCorrectionStatus;
 use App\Enums\TimeEntryStatus;
-use App\Enums\LeaveRequestStatus;
-use App\Enums\SickLeaveStatus;
-use App\Models\LeaveRequest;
-use App\Models\SickLeave;
 use App\Models\TimeEntry;
 use App\Models\TimeEntryCorrection;
 use Carbon\CarbonImmutable;
@@ -19,84 +15,6 @@ use Illuminate\View\View;
 
 class TimeEntryController extends Controller
 {
-    public function schedule(): View
-    {
-        $user = Auth::user();
-        $weekStart = CarbonImmutable::now()->startOfWeek(CarbonInterface::MONDAY);
-        $weekEnd = $weekStart->endOfWeek(CarbonInterface::SUNDAY);
-        $schedule = $user->activeSchedule();
-
-        $scheduleDays = $schedule
-            ? $schedule->days()->orderBy('weekday')->get()->keyBy('weekday')
-            : collect();
-
-        $entries = $user->timeEntries()
-            ->whereBetween('date', [$weekStart->toDateString(), $weekEnd->toDateString()])
-            ->orderBy('date')
-            ->get()
-            ->keyBy(fn (TimeEntry $entry): string => $entry->date->toDateString());
-
-        $corrections = $user->timeEntryCorrections()
-            ->whereBetween('date', [$weekStart->toDateString(), $weekEnd->toDateString()])
-            ->where('status', TimeEntryCorrectionStatus::Pending->value)
-            ->latest()
-            ->get()
-            ->keyBy(fn (TimeEntryCorrection $correction): string => $correction->date->toDateString());
-
-        $leaveRequests = $user->leaveRequests()
-            ->where('status', LeaveRequestStatus::Pending->value)
-            ->where('start_date', '<=', $weekEnd->toDateString())
-            ->where('end_date', '>=', $weekStart->toDateString())
-            ->get();
-
-        $approvedLeaveRequests = $user->leaveRequests()
-            ->where('status', LeaveRequestStatus::Approved->value)
-            ->where('start_date', '<=', $weekEnd->toDateString())
-            ->where('end_date', '>=', $weekStart->toDateString())
-            ->get();
-
-        $sickLeaves = $user->sickLeaves()
-            ->where('status', SickLeaveStatus::Reported->value)
-            ->where('start_date', '<=', $weekEnd->toDateString())
-            ->where(function ($query) use ($weekStart): void {
-                $query->whereNull('expected_return_date')
-                    ->orWhere('expected_return_date', '>=', $weekStart->toDateString());
-            })
-            ->get();
-
-        $approvedSickLeaves = $user->sickLeaves()
-            ->where('status', SickLeaveStatus::Approved->value)
-            ->where('start_date', '<=', $weekEnd->toDateString())
-            ->where(function ($query) use ($weekStart): void {
-                $query->whereNull('expected_return_date')
-                    ->orWhere('expected_return_date', '>=', $weekStart->toDateString());
-            })
-            ->get();
-
-        $weekDays = collect(range(0, 6))->map(function (int $offset) use ($weekStart, $scheduleDays, $entries, $corrections, $leaveRequests, $sickLeaves, $approvedLeaveRequests, $approvedSickLeaves): array {
-            $date = $weekStart->addDays($offset);
-
-            return [
-                'date' => $date,
-                'scheduleDay' => $scheduleDays->get($date->dayOfWeekIso),
-                'entry' => $entries->get($date->toDateString()),
-                'correction' => $corrections->get($date->toDateString()),
-                'leaveRequest' => $leaveRequests->first(fn (LeaveRequest $leaveRequest): bool => $date->betweenIncluded($leaveRequest->start_date, $leaveRequest->end_date)),
-                'sickLeave' => $sickLeaves->first(fn (SickLeave $sickLeave): bool => $date->betweenIncluded($sickLeave->start_date, $sickLeave->expected_return_date ?? $sickLeave->start_date)),
-                'approvedLeaveRequest' => $approvedLeaveRequests->first(fn (LeaveRequest $leaveRequest): bool => $date->betweenIncluded($leaveRequest->start_date, $leaveRequest->end_date)),
-                'approvedSickLeave' => $approvedSickLeaves->first(fn (SickLeave $sickLeave): bool => $date->betweenIncluded($sickLeave->start_date, $sickLeave->expected_return_date ?? $sickLeave->start_date)),
-            ];
-        });
-
-        return view('schedule', [
-            'user' => $user->loadMissing('company'),
-            'schedule' => $schedule,
-            'weekStart' => $weekStart,
-            'weekEnd' => $weekEnd,
-            'weekDays' => $weekDays,
-        ]);
-    }
-
     public function clockIn(): RedirectResponse
     {
         $user = Auth::user();
@@ -226,61 +144,5 @@ class TimeEntryController extends Controller
             ->whereDate('date', $date)
             ->latest()
             ->first();
-    }
-   
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }

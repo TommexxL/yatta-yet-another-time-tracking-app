@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Enums\TimeEntryCorrectionStatus;
 use App\Enums\TimeEntryStatus;
+use App\Enums\LeaveRequestStatus;
+use App\Enums\SickLeaveStatus;
+use App\Models\LeaveRequest;
+use App\Models\SickLeave;
 use App\Models\TimeEntry;
 use App\Models\TimeEntryCorrection;
 use Carbon\CarbonImmutable;
@@ -39,7 +43,37 @@ class TimeEntryController extends Controller
             ->get()
             ->keyBy(fn (TimeEntryCorrection $correction): string => $correction->date->toDateString());
 
-        $weekDays = collect(range(0, 6))->map(function (int $offset) use ($weekStart, $scheduleDays, $entries, $corrections): array {
+        $leaveRequests = $user->leaveRequests()
+            ->where('status', LeaveRequestStatus::Pending->value)
+            ->where('start_date', '<=', $weekEnd->toDateString())
+            ->where('end_date', '>=', $weekStart->toDateString())
+            ->get();
+
+        $approvedLeaveRequests = $user->leaveRequests()
+            ->where('status', LeaveRequestStatus::Approved->value)
+            ->where('start_date', '<=', $weekEnd->toDateString())
+            ->where('end_date', '>=', $weekStart->toDateString())
+            ->get();
+
+        $sickLeaves = $user->sickLeaves()
+            ->where('status', SickLeaveStatus::Reported->value)
+            ->where('start_date', '<=', $weekEnd->toDateString())
+            ->where(function ($query) use ($weekStart): void {
+                $query->whereNull('expected_return_date')
+                    ->orWhere('expected_return_date', '>=', $weekStart->toDateString());
+            })
+            ->get();
+
+        $approvedSickLeaves = $user->sickLeaves()
+            ->where('status', SickLeaveStatus::Approved->value)
+            ->where('start_date', '<=', $weekEnd->toDateString())
+            ->where(function ($query) use ($weekStart): void {
+                $query->whereNull('expected_return_date')
+                    ->orWhere('expected_return_date', '>=', $weekStart->toDateString());
+            })
+            ->get();
+
+        $weekDays = collect(range(0, 6))->map(function (int $offset) use ($weekStart, $scheduleDays, $entries, $corrections, $leaveRequests, $sickLeaves, $approvedLeaveRequests, $approvedSickLeaves): array {
             $date = $weekStart->addDays($offset);
 
             return [
@@ -47,6 +81,10 @@ class TimeEntryController extends Controller
                 'scheduleDay' => $scheduleDays->get($date->dayOfWeekIso),
                 'entry' => $entries->get($date->toDateString()),
                 'correction' => $corrections->get($date->toDateString()),
+                'leaveRequest' => $leaveRequests->first(fn (LeaveRequest $leaveRequest): bool => $date->betweenIncluded($leaveRequest->start_date, $leaveRequest->end_date)),
+                'sickLeave' => $sickLeaves->first(fn (SickLeave $sickLeave): bool => $date->betweenIncluded($sickLeave->start_date, $sickLeave->expected_return_date ?? $sickLeave->start_date)),
+                'approvedLeaveRequest' => $approvedLeaveRequests->first(fn (LeaveRequest $leaveRequest): bool => $date->betweenIncluded($leaveRequest->start_date, $leaveRequest->end_date)),
+                'approvedSickLeave' => $approvedSickLeaves->first(fn (SickLeave $sickLeave): bool => $date->betweenIncluded($sickLeave->start_date, $sickLeave->expected_return_date ?? $sickLeave->start_date)),
             ];
         });
 

@@ -204,6 +204,12 @@
                 padding: .25rem .6rem;
             }
 
+            .action-stack {
+                display: flex;
+                flex-wrap: wrap;
+                gap: .5rem;
+            }
+
             @media (max-width: 44rem) {
                 .topbar,
                 .page-head {
@@ -266,6 +272,7 @@
                                 <th>Clock Out</th>
                                 <th>Status</th>
                                 <th>Correction</th>
+                                <th>Leave</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -275,6 +282,10 @@
                                     $scheduleDay = $day['scheduleDay'];
                                     $entry = $day['entry'];
                                     $correction = $day['correction'];
+                                    $leaveRequest = $day['leaveRequest'];
+                                    $sickLeave = $day['sickLeave'];
+                                    $approvedLeaveRequest = $day['approvedLeaveRequest'];
+                                    $approvedSickLeave = $day['approvedSickLeave'];
                                 @endphp
                                 <tr @class(['today' => $date->isToday()])>
                                     <td class="day">
@@ -282,7 +293,11 @@
                                         <span class="date">{{ $date->format('d/m') }}</span>
                                     </td>
                                     <td>
-                                        @if($scheduleDay)
+                                        @if($approvedSickLeave)
+                                            <span class="badge">Sick</span>
+                                        @elseif($approvedLeaveRequest)
+                                            <span class="badge">Vacation</span>
+                                        @elseif($scheduleDay)
                                             {{ substr($scheduleDay->start_time, 0, 5) }}
                                             -
                                             {{ substr($scheduleDay->end_time, 0, 5) }}
@@ -307,6 +322,26 @@
                                             <a class="link-button" href="{{ route('time-entry.correction.create', ['date' => $date->toDateString()]) }}">
                                                 Request Change
                                             </a>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($approvedSickLeave)
+                                            <span class="badge">Sick leave approved</span>
+                                        @elseif($approvedLeaveRequest)
+                                            <span class="badge">Vacation approved</span>
+                                        @elseif($leaveRequest)
+                                            <span class="badge">Vacation pending</span>
+                                        @elseif($sickLeave)
+                                            <span class="badge">Sick leave pending</span>
+                                        @else
+                                            <div class="action-stack">
+                                                <a class="link-button" href="{{ route('leave-request.create', ['date' => $date->toDateString(), 'type' => 'vacation']) }}">
+                                                    Vacation
+                                                </a>
+                                                <a class="link-button" href="{{ route('leave-request.create', ['date' => $date->toDateString(), 'type' => 'sick']) }}">
+                                                    Sick
+                                                </a>
+                                            </div>
                                         @endif
                                     </td>
                                 </tr>

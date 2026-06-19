@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'end_date',
     'notes',
     'status',
+    'approved_by',
+    'approved_at',
 ])]
 class SickLeave extends Model
 {
@@ -32,6 +34,11 @@ class SickLeave extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
     /**
      * Get the attributes that should be cast.
      *
@@ -43,6 +50,7 @@ class SickLeave extends Model
             'start_date' => 'date',
             'expected_return_date' => 'date',
             'end_date' => 'date',
+            'approved_at' => 'datetime',
             'status' => SickLeaveStatus::class,
         ];
     }

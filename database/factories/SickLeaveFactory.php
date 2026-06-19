@@ -33,6 +33,8 @@ class SickLeaveFactory extends Factory
                 : null,
             'notes' => fake()->optional(0.7)->sentence(),
             'status' => $isClosed ? SickLeaveStatus::Approved : SickLeaveStatus::Reported,
+            'approved_by' => null,
+            'approved_at' => null,
         ];
     }
 }

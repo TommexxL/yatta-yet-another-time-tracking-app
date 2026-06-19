@@ -381,6 +381,94 @@
             <section class="card">
                 <div class="page-head">
                     <div>
+                        <h2>Leave Requests</h2>
+                        <p class="lead">{{ $pendingLeaveRequests->count() + $pendingSickLeaves->count() }} pending</p>
+                    </div>
+                </div>
+
+                @if($pendingLeaveRequests->isEmpty() && $pendingSickLeaves->isEmpty())
+                    <div class="empty">No pending leave requests.</div>
+                @else
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Type</th>
+                                    <th>Period</th>
+                                    <th>Reason</th>
+                                    <th>Decision</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($pendingLeaveRequests as $leaveRequest)
+                                    <tr>
+                                        <td>
+                                            <strong>{{ $leaveRequest->user->name }}</strong>
+                                            <div class="muted">{{ $leaveRequest->user->employee_number }}</div>
+                                        </td>
+                                        <td>{{ ucfirst($leaveRequest->leave_type) }}</td>
+                                        <td>
+                                            {{ $leaveRequest->start_date->format('d/m/Y') }}
+                                            -
+                                            {{ $leaveRequest->end_date->format('d/m/Y') }}
+                                            <div class="muted">{{ $leaveRequest->days }} days</div>
+                                        </td>
+                                        <td>{{ $leaveRequest->reason ?? '-' }}</td>
+                                        <td>
+                                            <div class="row-actions">
+                                                <form method="POST" action="{{ route('manage.leave-requests.approve', $leaveRequest) }}">
+                                                    @csrf
+                                                    <button class="button" type="submit">Approve</button>
+                                                </form>
+
+                                                <form method="POST" action="{{ route('manage.leave-requests.deny', $leaveRequest) }}">
+                                                    @csrf
+                                                    <textarea name="rejection_reason" placeholder="Reason"></textarea>
+                                                    <button class="danger-button" type="submit">Deny</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+
+                                @foreach($pendingSickLeaves as $sickLeave)
+                                    <tr>
+                                        <td>
+                                            <strong>{{ $sickLeave->user->name }}</strong>
+                                            <div class="muted">{{ $sickLeave->user->employee_number }}</div>
+                                        </td>
+                                        <td>Sick leave</td>
+                                        <td>
+                                            {{ $sickLeave->start_date->format('d/m/Y') }}
+                                            -
+                                            {{ $sickLeave->expected_return_date?->format('d/m/Y') ?? 'Open' }}
+                                        </td>
+                                        <td>{{ $sickLeave->notes ?? '-' }}</td>
+                                        <td>
+                                            <div class="row-actions">
+                                                <form method="POST" action="{{ route('manage.sick-leaves.approve', $sickLeave) }}">
+                                                    @csrf
+                                                    <button class="button" type="submit">Approve</button>
+                                                </form>
+
+                                                <form method="POST" action="{{ route('manage.sick-leaves.deny', $sickLeave) }}">
+                                                    @csrf
+                                                    <button class="danger-button" type="submit">Deny</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </section>
+
+            <section class="card">
+                <div class="page-head">
+                    <div>
                         <h2>Employee Schedules</h2>
                         <p class="lead">Assign the active schedule for employees in {{ $manager->company?->name ?? 'your company' }}.</p>
                     </div>

@@ -42,18 +42,21 @@ class ManageController extends Controller
             ->orderBy('name')
             ->get();
 
-        $managedSchedules = Schedule::query()
-            ->with(['days' => fn ($query) => $query->orderBy('weekday')])
-            ->where('company_id', $manager->company_id)
-            ->orderBy('name')
-            ->get();
-
         return view('manage.overview', [
             'manager' => $manager,
             'pendingCorrections' => $pendingCorrections,
             'employees' => $employees,
             'schedules' => $schedules,
-            'managedSchedules' => $managedSchedules,
+        ]);
+    }
+
+    public function schedule(): View
+    {
+        $manager = $this->manager();
+
+        return view('manage.schedule', [
+            'manager' => $manager,
+            'managedSchedules' => $this->managedSchedules($manager),
             'weekdays' => $this->weekdays(),
         ]);
     }
@@ -75,7 +78,7 @@ class ManageController extends Controller
         });
 
         return redirect()
-            ->route('manage.overview')
+            ->route('manage.schedule')
             ->with('success', 'Schedule created.');
     }
 
@@ -97,7 +100,7 @@ class ManageController extends Controller
         });
 
         return redirect()
-            ->route('manage.overview')
+            ->route('manage.schedule')
             ->with('success', 'Schedule updated.');
     }
 
@@ -110,7 +113,7 @@ class ManageController extends Controller
         $schedule->delete();
 
         return redirect()
-            ->route('manage.overview')
+            ->route('manage.schedule')
             ->with('success', 'Schedule removed.');
     }
 
@@ -212,6 +215,15 @@ class ManageController extends Controller
     {
         abort_unless($correction->company_id === $manager->company_id, 403);
         abort_unless($correction->status === TimeEntryCorrectionStatus::Pending, 403);
+    }
+
+    private function managedSchedules(User $manager)
+    {
+        return Schedule::query()
+            ->with(['days' => fn ($query) => $query->orderBy('weekday')])
+            ->where('company_id', $manager->company_id)
+            ->orderBy('name')
+            ->get();
     }
 
     /**

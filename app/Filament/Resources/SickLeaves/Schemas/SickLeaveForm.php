@@ -4,6 +4,7 @@ namespace App\Filament\Resources\SickLeaves\Schemas;
 
 use App\Enums\SickLeaveStatus;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
@@ -30,6 +31,9 @@ class SickLeaveForm
                 Select::make('status')
                     ->required()
                     ->options(SickLeaveStatus::class),
+                TextInput::make('approved_by')
+                    ->numeric(),
+                DateTimePicker::make('approved_at'),
             ]);
     }
 }

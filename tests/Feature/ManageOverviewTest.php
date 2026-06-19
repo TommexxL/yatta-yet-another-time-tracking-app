@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Enums\TimeEntryCorrectionStatus;
+use App\Models\LeaveRequest;
 use App\Models\Schedule;
 use App\Models\ScheduleDay;
+use App\Models\SickLeave;
 use App\Models\TimeEntry;
 use App\Models\TimeEntryCorrection;
 use App\Models\User;
@@ -35,6 +37,34 @@ class ManageOverviewTest extends TestCase
             ->assertSee('Time Corrections')
             ->assertSee($employee->name)
             ->assertSee('Forgot to clock out.');
+    }
+
+    public function test_manager_can_view_pending_leave_requests(): void
+    {
+        $manager = $this->managerUser();
+        $employee = User::factory()->create(['company_id' => $manager->company_id]);
+
+        LeaveRequest::factory()->create([
+            'company_id' => $manager->company_id,
+            'user_id' => $employee->id,
+            'leave_type' => 'vacation',
+            'reason' => 'Summer break.',
+            'status' => 'pending',
+        ]);
+
+        SickLeave::factory()->create([
+            'company_id' => $manager->company_id,
+            'user_id' => $employee->id,
+            'notes' => 'Doctor appointment.',
+            'status' => 'reported',
+        ]);
+
+        $this->actingAs($manager)
+            ->get(route('manage.overview'))
+            ->assertOk()
+            ->assertSee('Leave Requests')
+            ->assertSee('Summer break.')
+            ->assertSee('Doctor appointment.');
     }
 
     public function test_non_manager_cannot_access_manager_overview(): void
@@ -116,6 +146,97 @@ class ManageOverviewTest extends TestCase
             'reviewed_by' => $manager->id,
             'manager_notes' => 'Looks correct.',
         ]);
+    }
+
+    public function test_manager_can_approve_leave_request(): void
+    {
+        $manager = $this->managerUser();
+        $employee = User::factory()->create(['company_id' => $manager->company_id]);
+        $leaveRequest = LeaveRequest::factory()->create([
+            'company_id' => $manager->company_id,
+            'user_id' => $employee->id,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($manager)
+            ->post(route('manage.leave-requests.approve', $leaveRequest))
+            ->assertRedirect(route('manage.overview'));
+
+        $this->assertDatabaseHas('leave_requests', [
+            'id' => $leaveRequest->id,
+            'status' => 'approved',
+            'approved_by' => $manager->id,
+        ]);
+    }
+
+    public function test_manager_can_deny_leave_request(): void
+    {
+        $manager = $this->managerUser();
+        $employee = User::factory()->create(['company_id' => $manager->company_id]);
+        $leaveRequest = LeaveRequest::factory()->create([
+            'company_id' => $manager->company_id,
+            'user_id' => $employee->id,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($manager)
+            ->post(route('manage.leave-requests.deny', $leaveRequest), [
+                'rejection_reason' => 'Too many people are already off.',
+            ])
+            ->assertRedirect(route('manage.overview'));
+
+        $this->assertDatabaseHas('leave_requests', [
+            'id' => $leaveRequest->id,
+            'status' => 'denied',
+            'approved_by' => $manager->id,
+            'rejection_reason' => 'Too many people are already off.',
+        ]);
+    }
+
+    public function test_manager_can_approve_sick_leave(): void
+    {
+        $manager = $this->managerUser();
+        $employee = User::factory()->create(['company_id' => $manager->company_id]);
+        $sickLeave = SickLeave::factory()->create([
+            'company_id' => $manager->company_id,
+            'user_id' => $employee->id,
+            'status' => 'reported',
+        ]);
+
+        $this->actingAs($manager)
+            ->post(route('manage.sick-leaves.approve', $sickLeave))
+            ->assertRedirect(route('manage.overview'));
+
+        $this->assertDatabaseHas('sick_leaves', [
+            'id' => $sickLeave->id,
+            'status' => 'approved',
+            'approved_by' => $manager->id,
+        ]);
+
+        $this->assertNotNull($sickLeave->refresh()->approved_at);
+    }
+
+    public function test_manager_can_deny_sick_leave(): void
+    {
+        $manager = $this->managerUser();
+        $employee = User::factory()->create(['company_id' => $manager->company_id]);
+        $sickLeave = SickLeave::factory()->create([
+            'company_id' => $manager->company_id,
+            'user_id' => $employee->id,
+            'status' => 'reported',
+        ]);
+
+        $this->actingAs($manager)
+            ->post(route('manage.sick-leaves.deny', $sickLeave))
+            ->assertRedirect(route('manage.overview'));
+
+        $this->assertDatabaseHas('sick_leaves', [
+            'id' => $sickLeave->id,
+            'status' => 'denied',
+            'approved_by' => $manager->id,
+        ]);
+
+        $this->assertNotNull($sickLeave->refresh()->approved_at);
     }
 
     public function test_manager_can_set_employee_schedule(): void

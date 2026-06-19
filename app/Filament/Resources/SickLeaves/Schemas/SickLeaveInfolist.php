@@ -27,6 +27,12 @@ class SickLeaveInfolist
                     ->placeholder('-')
                     ->columnSpanFull(),
                 TextEntry::make('status'),
+                TextEntry::make('approved_by')
+                    ->numeric()
+                    ->placeholder('-'),
+                TextEntry::make('approved_at')
+                    ->dateTime()
+                    ->placeholder('-'),
                 TextEntry::make('created_at')
                     ->dateTime()
                     ->placeholder('-'),

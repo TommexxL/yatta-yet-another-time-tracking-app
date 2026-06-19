@@ -34,6 +34,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/manage', [ManageController::class, 'overview'])
         ->name('manage.overview');
 
+    Route::get('/manage/schedules', [ManageController::class, 'schedule'])
+        ->name('manage.schedule');
+
     Route::post('/manage/time-entry-corrections/{correction}/approve', [ManageController::class, 'approveCorrection'])
         ->name('manage.time-entry-corrections.approve');
 

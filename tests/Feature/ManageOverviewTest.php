@@ -46,6 +46,34 @@ class ManageOverviewTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_manager_can_view_schedule_management_page(): void
+    {
+        $manager = $this->managerUser();
+        $schedule = Schedule::factory()->create([
+            'company_id' => $manager->company_id,
+            'name' => 'Operations Day Shift',
+        ]);
+        ScheduleDay::factory()->create([
+            'schedule_id' => $schedule->id,
+            'weekday' => 1,
+        ]);
+
+        $this->actingAs($manager)
+            ->get(route('manage.schedule'))
+            ->assertOk()
+            ->assertSee('Manage Schedules')
+            ->assertSee('Operations Day Shift');
+    }
+
+    public function test_non_manager_cannot_access_schedule_management_page(): void
+    {
+        $employee = User::factory()->create();
+
+        $this->actingAs($employee)
+            ->get(route('manage.schedule'))
+            ->assertForbidden();
+    }
+
     public function test_manager_can_approve_time_entry_correction(): void
     {
         $manager = $this->managerUser();
@@ -150,7 +178,7 @@ class ManageOverviewTest extends TestCase
                     ],
                 ],
             ])
-            ->assertRedirect(route('manage.overview'));
+            ->assertRedirect(route('manage.schedule'));
 
         $this->assertDatabaseHas('schedules', [
             'company_id' => $manager->company_id,
@@ -200,7 +228,7 @@ class ManageOverviewTest extends TestCase
                     ],
                 ],
             ])
-            ->assertRedirect(route('manage.overview'));
+            ->assertRedirect(route('manage.schedule'));
 
         $this->assertDatabaseHas('schedules', [
             'id' => $schedule->id,
@@ -236,7 +264,7 @@ class ManageOverviewTest extends TestCase
 
         $this->actingAs($manager)
             ->delete(route('manage.schedules.destroy', $schedule))
-            ->assertRedirect(route('manage.overview'));
+            ->assertRedirect(route('manage.schedule'));
 
         $this->assertDatabaseMissing('schedules', [
             'id' => $schedule->id,

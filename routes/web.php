@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ManageController;
 use App\Http\Controllers\LeaveRequestController;
+use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\TimeEntryController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,7 +18,7 @@ Route::get('/profile', function () {
 
 
 Route::middleware('auth')->group(function () {
-    Route::get('/schedule', [TimeEntryController::class, 'schedule'])
+    Route::get('/schedule', [ScheduleController::class, 'index'])
         ->name('schedule');
 
     Route::post('/clock-in', [TimeEntryController::class, 'clockIn'])
@@ -41,7 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/manage', [ManageController::class, 'overview'])
         ->name('manage.overview');
 
-    Route::get('/manage/schedules', [ManageController::class, 'schedule'])
+    Route::get('/manage/schedules', [ScheduleController::class, 'manage'])
         ->name('manage.schedule');
 
     Route::post('/manage/time-entry-corrections/{correction}/approve', [ManageController::class, 'approveCorrection'])
@@ -62,15 +63,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/manage/sick-leaves/{sickLeave}/deny', [ManageController::class, 'denySickLeave'])
         ->name('manage.sick-leaves.deny');
 
-    Route::post('/manage/employees/{employee}/schedule', [ManageController::class, 'setEmployeeSchedule'])
+    Route::post('/manage/employees/{employee}/schedule', [ScheduleController::class, 'assignEmployee'])
         ->name('manage.employees.schedule');
 
-    Route::post('/manage/schedules', [ManageController::class, 'storeSchedule'])
+    Route::post('/manage/schedules', [ScheduleController::class, 'store'])
         ->name('manage.schedules.store');
 
-    Route::put('/manage/schedules/{schedule}', [ManageController::class, 'updateSchedule'])
+    Route::put('/manage/schedules/{schedule}', [ScheduleController::class, 'update'])
         ->name('manage.schedules.update');
 
-    Route::delete('/manage/schedules/{schedule}', [ManageController::class, 'destroySchedule'])
+    Route::delete('/manage/schedules/{schedule}', [ScheduleController::class, 'destroy'])
         ->name('manage.schedules.destroy');
 });

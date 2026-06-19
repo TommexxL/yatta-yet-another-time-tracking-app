@@ -282,6 +282,7 @@
 
                 <div class="nav">
                     <a class="link-button" href="{{ route('profile') }}">Profile</a>
+                    <a class="link-button" href="{{ route('manage.schedule') }}">Manage Schedules</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button class="button" type="submit">Sign out</button>

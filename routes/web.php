@@ -4,7 +4,7 @@ use App\Http\Controllers\ManageController;
 use App\Http\Controllers\TimeEntryController;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/login');
+Route::redirect('/', '/profile');
 
 
 Route::get('/profile', function () {
@@ -34,6 +34,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/manage', [ManageController::class, 'overview'])
         ->name('manage.overview');
 
+    Route::get('/manage/schedules', [ManageController::class, 'schedule'])
+        ->name('manage.schedule');
+
     Route::post('/manage/time-entry-corrections/{correction}/approve', [ManageController::class, 'approveCorrection'])
         ->name('manage.time-entry-corrections.approve');
 
@@ -42,4 +45,13 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/manage/employees/{employee}/schedule', [ManageController::class, 'setEmployeeSchedule'])
         ->name('manage.employees.schedule');
+
+    Route::post('/manage/schedules', [ManageController::class, 'storeSchedule'])
+        ->name('manage.schedules.store');
+
+    Route::put('/manage/schedules/{schedule}', [ManageController::class, 'updateSchedule'])
+        ->name('manage.schedules.update');
+
+    Route::delete('/manage/schedules/{schedule}', [ManageController::class, 'destroySchedule'])
+        ->name('manage.schedules.destroy');
 });

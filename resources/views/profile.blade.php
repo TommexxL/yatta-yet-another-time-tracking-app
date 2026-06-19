@@ -176,6 +176,7 @@
 
                         @if($user->hasRole('manager'))
                             <a class="button" href="{{ route('manage.overview') }}">Manage</a>
+                            <a class="button" href="{{ route('manage.schedule') }}">Manage Schedules</a>
                         @endif
 
                         @if(! $user->isClockedIn())

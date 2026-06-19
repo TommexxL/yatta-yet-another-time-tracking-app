@@ -243,6 +243,74 @@
                 min-width: 13rem;
             }
 
+            .split-grid {
+                display: grid;
+                gap: 1rem;
+                padding: 1.5rem;
+            }
+
+            .manager-form {
+                display: grid;
+                gap: 1rem;
+            }
+
+            .form-grid {
+                display: grid;
+                gap: 1rem;
+                grid-template-columns: minmax(14rem, 1fr) 9rem auto;
+                align-items: end;
+            }
+
+            .check-field {
+                display: inline-flex;
+                align-items: center;
+                gap: .45rem;
+                min-height: 2.4rem;
+                font-weight: 750;
+            }
+
+            .check-field input {
+                width: auto;
+            }
+
+            .day-grid {
+                display: grid;
+                gap: .75rem;
+            }
+
+            .day-row {
+                display: grid;
+                grid-template-columns: minmax(7rem, 1fr) repeat(3, minmax(6rem, .65fr));
+                gap: .75rem;
+                align-items: end;
+                border-top: 1px solid var(--line);
+                padding-top: .75rem;
+            }
+
+            .schedule-stack {
+                display: grid;
+                gap: 1rem;
+            }
+
+            .schedule-editor {
+                border: 1px solid var(--line);
+                border-radius: .6rem;
+                padding: 1rem;
+            }
+
+            .schedule-editor h3 {
+                margin: 0 0 .2rem;
+                font-size: 1rem;
+            }
+
+            .schedule-editor-head {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 1rem;
+                margin-bottom: 1rem;
+            }
+
             .label {
                 display: block;
                 margin-bottom: .25rem;
@@ -262,6 +330,16 @@
 
                 .nav,
                 .schedule-form {
+                    align-items: stretch;
+                    flex-direction: column;
+                }
+
+                .form-grid,
+                .day-row {
+                    grid-template-columns: 1fr;
+                }
+
+                .schedule-editor-head {
                     align-items: stretch;
                     flex-direction: column;
                 }
@@ -307,6 +385,147 @@
                         <h1>Manage</h1>
                         <p class="lead">Incoming requests and employee schedule assignments.</p>
                     </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <div class="page-head">
+                    <div>
+                        <h2>Schedules</h2>
+                        <p class="lead">Create, edit, or remove work schedules for {{ $manager->company?->name ?? 'your company' }}.</p>
+                    </div>
+                </div>
+
+                <div class="split-grid">
+                    <form class="manager-form" method="POST" action="{{ route('manage.schedules.store') }}">
+                        @csrf
+
+                        <div class="form-grid">
+                            <div class="field">
+                                <label class="label" for="schedule_name_new">Name</label>
+                                <input id="schedule_name_new" name="name" value="{{ old('name') }}" placeholder="Operations day shift" required>
+                            </div>
+
+                            <div class="field">
+                                <label class="label" for="weekly_hours_new">Weekly hours</label>
+                                <input id="weekly_hours_new" name="weekly_hours" type="number" min="0" max="168" step="0.25" value="{{ old('weekly_hours', 38) }}" required>
+                            </div>
+
+                            <label class="check-field">
+                                <input name="active" type="checkbox" value="1" @checked((bool) old('active', true))>
+                                Active
+                            </label>
+                        </div>
+
+                        <div class="day-grid">
+                            @foreach($weekdays as $weekday => $weekdayName)
+                                <div class="day-row">
+                                    <label class="check-field">
+                                        <input name="days[{{ $weekday }}][enabled]" type="checkbox" value="1" @checked((bool) old("days.{$weekday}.enabled", $weekday <= 5))>
+                                        {{ $weekdayName }}
+                                    </label>
+
+                                    <div class="field">
+                                        <label class="label" for="start_time_new_{{ $weekday }}">Start</label>
+                                        <input id="start_time_new_{{ $weekday }}" name="days[{{ $weekday }}][start_time]" type="time" value="{{ old("days.{$weekday}.start_time", '09:00') }}">
+                                    </div>
+
+                                    <div class="field">
+                                        <label class="label" for="end_time_new_{{ $weekday }}">End</label>
+                                        <input id="end_time_new_{{ $weekday }}" name="days[{{ $weekday }}][end_time]" type="time" value="{{ old("days.{$weekday}.end_time", '17:00') }}">
+                                    </div>
+
+                                    <div class="field">
+                                        <label class="label" for="break_minutes_new_{{ $weekday }}">Break</label>
+                                        <input id="break_minutes_new_{{ $weekday }}" name="days[{{ $weekday }}][break_minutes]" type="number" min="0" max="1440" step="1" value="{{ old("days.{$weekday}.break_minutes", 30) }}">
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <button class="button" type="submit">Add Schedule</button>
+                    </form>
+
+                    @if($managedSchedules->isEmpty())
+                        <div class="empty">No schedules have been created yet.</div>
+                    @else
+                        <div class="schedule-stack">
+                            @foreach($managedSchedules as $managedSchedule)
+                                @php($scheduleDays = $managedSchedule->days->keyBy('weekday'))
+
+                                <article class="schedule-editor">
+                                    <div class="schedule-editor-head">
+                                        <div>
+                                            <h3>{{ $managedSchedule->name }}</h3>
+                                            <div class="muted">
+                                                {{ $managedSchedule->weekly_hours }} hours weekly
+                                                @if(! $managedSchedule->active)
+                                                    · inactive
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        <form method="POST" action="{{ route('manage.schedules.destroy', $managedSchedule) }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="danger-button" type="submit">Remove</button>
+                                        </form>
+                                    </div>
+
+                                    <form class="manager-form" method="POST" action="{{ route('manage.schedules.update', $managedSchedule) }}">
+                                        @csrf
+                                        @method('PUT')
+
+                                        <div class="form-grid">
+                                            <div class="field">
+                                                <label class="label" for="schedule_name_{{ $managedSchedule->id }}">Name</label>
+                                                <input id="schedule_name_{{ $managedSchedule->id }}" name="name" value="{{ old('name', $managedSchedule->name) }}" required>
+                                            </div>
+
+                                            <div class="field">
+                                                <label class="label" for="weekly_hours_{{ $managedSchedule->id }}">Weekly hours</label>
+                                                <input id="weekly_hours_{{ $managedSchedule->id }}" name="weekly_hours" type="number" min="0" max="168" step="0.25" value="{{ old('weekly_hours', $managedSchedule->weekly_hours) }}" required>
+                                            </div>
+
+                                            <label class="check-field">
+                                                <input name="active" type="checkbox" value="1" @checked((bool) old('active', $managedSchedule->active))>
+                                                Active
+                                            </label>
+                                        </div>
+
+                                        <div class="day-grid">
+                                            @foreach($weekdays as $weekday => $weekdayName)
+                                                @php($day = $scheduleDays->get($weekday))
+                                                <div class="day-row">
+                                                    <label class="check-field">
+                                                        <input name="days[{{ $weekday }}][enabled]" type="checkbox" value="1" @checked((bool) old("days.{$weekday}.enabled", $day !== null))>
+                                                        {{ $weekdayName }}
+                                                    </label>
+
+                                                    <div class="field">
+                                                        <label class="label" for="start_time_{{ $managedSchedule->id }}_{{ $weekday }}">Start</label>
+                                                        <input id="start_time_{{ $managedSchedule->id }}_{{ $weekday }}" name="days[{{ $weekday }}][start_time]" type="time" value="{{ old("days.{$weekday}.start_time", $day ? substr($day->start_time, 0, 5) : '09:00') }}">
+                                                    </div>
+
+                                                    <div class="field">
+                                                        <label class="label" for="end_time_{{ $managedSchedule->id }}_{{ $weekday }}">End</label>
+                                                        <input id="end_time_{{ $managedSchedule->id }}_{{ $weekday }}" name="days[{{ $weekday }}][end_time]" type="time" value="{{ old("days.{$weekday}.end_time", $day ? substr($day->end_time, 0, 5) : '17:00') }}">
+                                                    </div>
+
+                                                    <div class="field">
+                                                        <label class="label" for="break_minutes_{{ $managedSchedule->id }}_{{ $weekday }}">Break</label>
+                                                        <input id="break_minutes_{{ $managedSchedule->id }}_{{ $weekday }}" name="days[{{ $weekday }}][break_minutes]" type="number" min="0" max="1440" step="1" value="{{ old("days.{$weekday}.break_minutes", $day?->break_minutes ?? 30) }}">
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+
+                                        <button class="button" type="submit">Save Schedule</button>
+                                    </form>
+                                </article>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
             </section>
 

@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\AuditLogs;
 
 use App\Filament\Resources\AuditLogs\Pages\CreateAuditLog;
-use App\Filament\Resources\AuditLogs\Pages\EditAuditLog;
 use App\Filament\Resources\AuditLogs\Pages\ListAuditLogs;
 use App\Filament\Resources\AuditLogs\Pages\ViewAuditLog;
 use App\Filament\Resources\AuditLogs\Schemas\AuditLogForm;
@@ -46,13 +45,27 @@ class AuditLogResource extends Resource
         ];
     }
 
+    public static function canEdit($record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return false;
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => ListAuditLogs::route('/'),
             'create' => CreateAuditLog::route('/create'),
             'view' => ViewAuditLog::route('/{record}'),
-            'edit' => EditAuditLog::route('/{record}/edit'),
         ];
     }
 }
